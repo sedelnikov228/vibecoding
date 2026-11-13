@@ -29,6 +29,7 @@ button{background:var(--panel);border-radius:8px}button[aria-current=true]{backg
 .exercise{border:0;border-top:1px solid var(--line);border-radius:0;padding:12px 0}
 @media(max-width:880px){body>header{position:static;width:auto;border-right:0;border-bottom:1px solid var(--line)}.bar{padding:12px 16px;gap:10px;align-items:flex-start}nav{display:flex}nav button{padding:5px 10px}main{margin:0 auto;padding:24px 16px}}
 @media(max-width:640px){.gym-grid{grid-template-columns:minmax(0,1fr)}.gym-grid .card{padding:15px}.gym-grid .gym-stack+ .gym-stack{border-left:0;border-top:1px solid var(--line)}.gym-grid .fields{grid-template-columns:1fr}.month-panel h2,.day-panel h2{font-size:18px}}
+.exercise .set-row{grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0}.exercise .actions{justify-content:flex-end}
 </style></head><body>
 <header><div class="bar"><div class="brand"><span class="mark" aria-hidden="true">↗</span> Личный трекер</div><nav aria-label="Разделы"><button data-tab="gym">Зал</button><button data-tab="notes">Заметки</button><button data-tab="calendar">Календарь</button><button data-tab="timeline">Таймлайн</button></nav></div></header>
 <main><div class="intro"><div class="date" id="today"></div><h1 id="heading">Тренировки</h1><p class="muted" id="description"></p></div>
@@ -141,7 +142,7 @@ function list(container,items){
         const entry=document.createElement('li');
         entry.textContent=exercise.title;
         const sets=document.createElement('span');
-        sets.textContent=exercise.sets.map(set=>set.weight+' кг × '+set.reps).join(' · ');
+        sets.textContent=groupSets(exercise.sets).map(set=>set.count+' × '+set.reps+' · '+set.weight+' кг').join(' / ');
         entry.append(sets);
         exercises.append(entry);
       }
@@ -225,28 +226,34 @@ function closeWorkout(){
   $('workout-form').hidden=true;
   $('gym-day-panel').hidden=false;
 }
+function groupSets(sets){
+  const groups=[];
+  for(const set of sets){
+    const last=groups.at(-1);
+    if(last?.weight===set.weight&&last.reps===set.reps) last.count++;
+    else groups.push({...set,count:1});
+  }
+  return groups;
+}
 function addExercise(exercise={}){
   const container=$('workout-exercises');
   if(container.children.length>=50) return;
   const card=document.createElement('div');
   card.className='exercise';
-  card.innerHTML='<label>Упражнение<input name="exercise" list="exercise-names" maxlength="120" placeholder="Жим лёжа" required></label><div class="sets"></div><div class="actions"><button type="button" data-add>＋ Подход</button><button type="button" data-remove>Убрать упражнение</button></div>';
+  card.innerHTML='<label>Упражнение<input name="exercise" list="exercise-names" maxlength="120" placeholder="Жим штанги лёжа" required></label><div class="sets"></div><div class="actions"><button type="button" data-remove>Убрать упражнение</button></div>';
   const title=card.querySelector('input'), sets=card.querySelector('.sets');
   title.value=exercise.title??'';
   card.querySelector('[data-remove]').onclick=()=>card.remove();
-  function addSet(set={}){
-    if(sets.children.length>=50) return;
+  const groups=exercise.sets?groupSets(exercise.sets):[{count:1}];
+  for(const set of groups){
     const row=document.createElement('div');
     row.className='set-row';
-    row.innerHTML='<label>Вес, кг<input name="weight" type="number" inputmode="decimal" min="0" max="9999" step="any" required></label><label>Повторы<input name="reps" type="number" inputmode="numeric" min="1" max="9999" required></label><button type="button" aria-label="Убрать подход">×</button>';
+    row.innerHTML='<label>Подходы<input name="count" type="number" inputmode="numeric" min="1" max="50" required></label><label>Вес, кг<input name="weight" type="number" inputmode="decimal" min="0" max="9999" step="any" required></label><label>Повторы<input name="reps" type="number" inputmode="numeric" min="1" max="9999" required></label>';
+    row.querySelector('[name=count]').value=set.count;
     row.querySelector('[name=weight]').value=set.weight??'';
     row.querySelector('[name=reps]').value=set.reps??'';
-    row.querySelector('button').onclick=()=>row.remove();
     sets.append(row);
-    return row.querySelector('input');
   }
-  for(const set of exercise.sets??[{}]) addSet(set);
-  card.querySelector('[data-add]').onclick=()=>addSet()?.focus();
   container.append(card);
   return title;
 }
@@ -301,14 +308,20 @@ $('workout-form').onsubmit=event=>{
   const fields=event.currentTarget.elements;
   const exercises=Array.from($('workout-exercises').children,card=>({
     title:card.querySelector('[name=exercise]').value.trim(),
-    sets:Array.from(card.querySelectorAll('.set-row'),row=>({
-      weight:Number(row.querySelector('[name=weight]').value),
-      reps:Number(row.querySelector('[name=reps]').value)
-    }))
+    sets:Array.from(card.querySelectorAll('.set-row')).flatMap(row=>{
+      const count=row.querySelector('[name=count]').valueAsNumber;
+      const weight=row.querySelector('[name=weight]').valueAsNumber;
+      const reps=row.querySelector('[name=reps]').valueAsNumber;
+      return Array.from({length:count},()=>({weight,reps}));
+    })
   }));
   const title=fields.namedItem('title').value.trim();
   if(!title||!exercises.length||exercises.some(exercise=>!exercise.title||!exercise.sets.length)){
     message('Укажи группы мышц и добавь хотя бы один подход к каждому упражнению.',true);
+    return;
+  }
+  if(exercises.some(exercise=>exercise.sets.length>50)){
+    message('Укажи до 50 подходов на упражнение.',true);
     return;
   }
   const {id,revision,day}=workout;
