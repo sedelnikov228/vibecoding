@@ -24,6 +24,7 @@ if (!database.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='
 }
 
 database.exec(await readFile(new URL('./drizzle/0002_exercises.sql', import.meta.url), 'utf8'));
+database.exec(await readFile(new URL('./drizzle/0003_exercise_catalog.sql', import.meta.url), 'utf8'));
 
 const DB = {
   prepare(sql) {
