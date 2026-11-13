@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#141714"><title>Личный трекер</title>
+<style>
+:root{color-scheme:dark;--bg:#141714;--panel:#1d221e;--line:#343d34;--text:#edf1e9;--muted:#a9b4a7;--accent:#d4f891}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 'Segoe UI',system-ui,sans-serif}header{border-bottom:1px solid var(--line)}.bar,main{max-width:1100px;margin:auto;padding:0 26px}.bar{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:700;display:flex;align-items:center;gap:11px}.mark{background:var(--accent);color:#172014;border-radius:9px;padding:3px 9px;font-weight:900}.muted,small{color:var(--muted)}nav{display:flex;gap:6px;flex-wrap:wrap}button,input,textarea{font:inherit}button{cursor:pointer;min-height:42px;border:1px solid var(--line);border-radius:10px;padding:8px 14px;background:#292f28;color:var(--text)}button:hover{border-color:var(--accent)}button:disabled{opacity:.55;cursor:wait}button[aria-current=true]{background:#34432b;color:var(--accent)}.primary{background:var(--accent);color:#172014;border-color:var(--accent);font-weight:750}main{padding-top:46px;padding-bottom:48px}h1{font-size:clamp(38px,7vw,70px);line-height:1;letter-spacing:-.055em;margin:8px 0 15px}h2{font-size:23px;margin:0 0 15px}p{margin:0 0 12px}.intro{margin-bottom:28px}.date{color:var(--accent);font-weight:650}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}label{display:grid;gap:6px;color:var(--muted);font-size:14px}.wide{grid-column:1/-1}input,textarea{min-width:0;width:100%;min-height:44px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:#151a15;color:var(--text);font-size:16px}textarea{min-height:115px;resize:vertical}.entry{padding:13px 0;border-top:1px solid var(--line);display:flex;align-items:start;justify-content:space-between;gap:10px}.entry p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.entry>div:first-child{min-width:0}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{font-size:13px;padding:5px 9px}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center;margin:14px 0}.calendar button{padding:2px;min-width:0}.calendar .filled{color:var(--accent)}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px}.status{font-size:13px;color:var(--muted);margin:18px 0;min-height:1.4em}.error{color:#ffb4a9}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}[hidden]{display:none!important}@media(max-width:700px){.bar{padding:12px 16px;align-items:flex-start;flex-direction:column;gap:9px}.bar button{min-height:36px;padding:5px 9px;font-size:14px}main{padding:28px 16px}.grid{grid-template-columns:1fr}.card{padding:16px}.entry{flex-wrap:wrap}}
+.gym-grid{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}.gym-stack{display:grid;gap:16px;min-width:0}.exercise{border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0}.set-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end;margin:8px 0}.calendar .filled{box-shadow:inset 0 -3px var(--accent)}#gym-catalog{padding-left:20px;overflow-wrap:anywhere}summary{cursor:pointer}.workout-details{overflow-wrap:anywhere;margin:8px 0;padding-left:20px}@media(max-width:700px){.gym-grid{grid-template-columns:1fr}}
+</style></head><body>
+<header><div class="bar"><div class="brand"><span class="mark" aria-hidden="true">↗</span> Личный трекер</div><nav aria-label="Разделы"><button data-tab="gym">Зал</button><button data-tab="notes">Заметки</button><button data-tab="calendar">Календарь</button><button data-tab="timeline">Таймлайн</button></nav></div></header>
+<main><div class="intro"><div class="date" id="today"></div><h1 id="heading">Тренировки</h1><p class="muted" id="description"></p></div>
+<section id="editor" class="grid"><div class="card"><h2 id="form-title"></h2><form id="form"><div class="fields" id="fields"></div><div class="actions"><button class="primary" id="submit"></button><button type="button" id="cancel" hidden>Отмена</button></div></form></div><div class="card"><h2 id="list-title"></h2><div id="entries"></div></div></section>
+<section id="browse" class="card" hidden><div id="month-bar" class="toolbar"><button id="prev" aria-label="Предыдущий месяц">←</button><strong id="month"></strong><button id="next" aria-label="Следующий месяц">→</button></div><div id="calendar" class="calendar"></div><h2 id="browse-title"></h2><div id="browse-entries"></div></section>
+<section id="gym-panel" class="grid gym-grid" hidden>
+  <div class="gym-stack">
+    <div class="card"><div class="toolbar"><button id="gym-prev" aria-label="Предыдущий месяц">‹</button><strong id="gym-month"></strong><button id="gym-next" aria-label="Следующий месяц">›</button></div><div id="gym-calendar" class="calendar"></div><small>Подчёркнуты дни с тренировками</small></div>
+    <details class="card"><summary>Каталог упражнений <span id="gym-count"></span></summary><ul id="gym-catalog"></ul></details>
+  </div>
+  <div class="gym-stack">
+    <div class="card"><h2 id="gym-day"></h2><button type="button" class="primary" id="new-workout" data-record-action>Добавить тренировку</button><div id="gym-entries"></div></div>
+    <form class="card" id="workout-form" hidden>
+      <h2 id="workout-heading"></h2>
+      <div class="fields"><label>Группы мышц<input name="title" placeholder="Грудь, трицепс" maxlength="120" required></label><label>Длительность, мин<input name="duration" type="number" inputmode="numeric" min="1" max="1440" required></label></div>
+      <datalist id="exercise-names"></datalist><div id="workout-exercises"></div>
+      <p><button type="button" id="add-exercise">＋ Упражнение</button></p>
+      <div class="actions"><button class="primary" data-record-action>Сохранить тренировку</button><button type="button" id="cancel-workout">Отмена</button></div>
+    </form>
+  </div>
+</section>
+<div class="status" id="status" role="status"></div><button id="retry" hidden>Повторить загрузку</button></main>
+<script type="module">
+const $ = id => document.getElementById(id);
+const iso = date => [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
+const dateLabel = (day, options={day:'numeric',month:'long',year:'numeric'}) => new Date(day+'T12:00:00').toLocaleDateString('ru-RU',options);
+const today = iso(new Date());
+const newId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2,'0')).join('').replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/,'$1-$2-$3-$4-$5');
+const tabs = {
+  gym: ['Тренировки','Выбери день, чтобы посмотреть или записать тренировку.'],
+  notes: ['Заметки','Записывай мысли и идеи.','Новая заметка','Все заметки','Сохранить заметку'],
+  calendar: ['Календарь','Тренировки и заметки по дням.'],
+  timeline: ['Таймлайн','Все записи в хронологическом порядке.']
+};
+let tab='gym', records=[], editing=null, busy=false, ready=false, selected=today;
+let month=new Date(today+'T12:00:00');
+let gymMonth=new Date(month), gymDay=today, workout=null, catalog=[];
+$('today').textContent=dateLabel(today,{weekday:'long',day:'numeric',month:'long'});
+function message(value,error=false){
+  $('status').textContent=value;
+  $('status').classList.toggle('error',error);
+}
+async function load(){
+  busy=true; $('retry').hidden=true; updateControls(); message('Загружаем записи…');
+  try {
+    const [response,names]=await Promise.all(['/api/records','/api/exercises'].map(url=>fetch(url,{cache:'no-store'})));
+    if(!response.ok||!names.ok) throw new Error();
+    records=await response.json();
+    catalog=await names.json();
+    ready=true;
+    renderEntries();
+    message('Записи синхронизированы');
+  } catch { $('retry').hidden=false; message('Не удалось загрузить записи. Проверь соединение и повтори попытку.',true); }
+  finally { busy=false; updateControls(); }
+}
+function updateControls(){
+  $('submit').disabled=busy||!ready;
+  document.querySelectorAll('[data-record-action]').forEach(button=>button.disabled=busy||!ready);
+}
+function show(next){
+  tab=next; editing=null;
+  document.querySelectorAll('[data-tab]').forEach(button=>button.setAttribute('aria-current',String(button.dataset.tab===tab)));
+  $('heading').textContent=tabs[tab][0]; $('description').textContent=tabs[tab][1];
+  $('editor').hidden=tab!=='notes'; $('browse').hidden=tab!=='calendar'&&tab!=='timeline';
+  $('gym-panel').hidden=tab!=='gym';
+  if(!$('editor').hidden) renderForm();
+  renderEntries();
+}
+function renderForm(){
+  $('form-title').textContent=editing?'Изменить заметку':tabs[tab][2];
+  $('list-title').textContent=tabs[tab][3]; $('submit').textContent=editing?'Сохранить изменения':tabs[tab][4]; $('cancel').hidden=!editing;
+  $('fields').innerHTML='<label class="wide">Заголовок<input name="title" maxlength="120" required></label><label class="wide">Текст<textarea name="body" maxlength="20000"></textarea></label>';
+  $('fields').insertAdjacentHTML('beforeend','<label class="wide">Дата<input name="day" type="date" min="1900-01-01" max="9999-12-31" required></label>');
+  const fields=$('form').elements;
+  fields.namedItem('day').value=editing?.day||today;
+  if(editing) for(const [key,value] of Object.entries(editing)) {
+    const field=fields.namedItem(key);
+    if(field) field.value=value;
+  }
+  updateControls();
+}
+function renderEntries(){
+  if(tab==='gym'){renderGym();return;}
+  if(tab==='notes'){ list($('entries'),records.filter(record=>record.kind===tab)); return; }
+  const isCalendar=tab==='calendar';
+  $('month-bar').hidden=!isCalendar; $('calendar').hidden=!isCalendar;
+  if(isCalendar) drawCalendar();
+  $('browse-title').textContent=isCalendar?dateLabel(selected):'Все записи';
+  list($('browse-entries'),isCalendar?records.filter(record=>record.day===selected):records);
+}
+function list(container,items){
+  container.replaceChildren();
+  if(!items.length){
+    const empty=document.createElement('p'); empty.className='muted'; empty.textContent=ready?'Пока здесь пусто.':'Записи ещё не загружены.';
+    container.append(empty);
+    return;
+  }
+  for(const record of items){
+    const row=document.createElement('article'); row.className='entry';
+    const copy=document.createElement('div');
+    const title=document.createElement('strong'); title.textContent=record.title;
+    const detail=document.createElement('p'); detail.textContent=record.kind==='gym'?record.weight+' кг × '+record.reps:record.body??'';
+    if(record.kind==='workout') detail.textContent=record.duration+' мин';
+    const date=document.createElement('small'); date.textContent=dateLabel(record.day);
+    copy.append(title,detail,date);
+    if(record.kind==='workout'){
+      const exercises=document.createElement('ul');
+      exercises.className='workout-details';
+      for(const exercise of record.exercises){
+        const entry=document.createElement('li');
+        entry.textContent=exercise.title+' · '+exercise.sets.map(set=>set.weight+' кг × '+set.reps).join(', ');
+        exercises.append(entry);
+      }
+      copy.append(exercises);
+    }
+    const actions=document.createElement('div'); actions.className='actions';
+    const actionsForRecord=[['Удалить',()=>{if(confirm('Удалить запись «'+record.title+'»?')) save('DELETE',record);}]];
+    if(record.kind!=='gym') actionsForRecord.unshift(['Изменить',()=>{
+      if(record.kind==='workout'){openWorkout(record);return;}
+      show('notes'); editing=record; renderForm(); $('form').elements.namedItem('title').focus();
+    }]);
+    for(const [label,action] of actionsForRecord) {
+      const button=document.createElement('button'); button.textContent=label; button.dataset.recordAction=''; button.disabled=busy||!ready; button.onclick=action; actions.append(button);
+    }
+    row.append(copy,actions); container.append(row);
+  }
+}
+function drawCalendar(gym=false){
+  const prefix=gym?'gym-':'', visibleMonth=gym?gymMonth:month;
+  $(prefix+'month').textContent=visibleMonth.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+  const calendar=$(prefix+'calendar'); calendar.replaceChildren();
+  for(const name of ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']){
+    const label=document.createElement('small'); label.textContent=name; calendar.append(label);
+  }
+  const year=visibleMonth.getFullYear(), index=visibleMonth.getMonth();
+  const offset=(new Date(year,index,1).getDay()+6)%7;
+  for(let i=0;i<offset;i++) calendar.append(document.createElement('span'));
+  const dates=new Set(records.filter(record=>!gym||record.kind!=='notes').map(record=>record.day));
+  for(let day=1;day<=new Date(year,index+1,0).getDate();day++){
+    const date=iso(new Date(year,index,day)), button=document.createElement('button');
+    button.textContent=day; button.setAttribute('aria-label',dateLabel(date)+(dates.has(date)?', есть записи':''));
+    button.setAttribute('aria-current',String(date===(gym?gymDay:selected))); button.classList.toggle('filled',dates.has(date));
+    button.onclick=()=>{if(gym) gymDay=date; else selected=date; renderEntries(); calendar.querySelector('[aria-current=true]').focus();};
+    calendar.append(button);
+  }
+}
+function moveMonth(amount){
+  month=new Date(month.getFullYear(),month.getMonth()+amount,1);
+  selected=iso(month); renderEntries();
+}
+function renderGym(){
+  drawCalendar(true);
+  $('gym-day').textContent=dateLabel(gymDay);
+  list($('gym-entries'),records.filter(record=>record.kind!=='notes'&&record.day===gymDay));
+  const names=[...catalog].sort((a,b)=>a.localeCompare(b,'ru'));
+  $('gym-count').textContent='('+names.length+')';
+  $('gym-catalog').replaceChildren(...names.map(name=>{
+    const item=document.createElement('li');
+    item.textContent=name;
+    return item;
+  }));
+  $('exercise-names').replaceChildren(...names.map(name=>new Option(name)));
+}
+function openWorkout(record){
+  if(record){
+    gymDay=record.day;
+    gymMonth=new Date(gymDay+'T12:00:00');
+    show('gym');
+  }
+  workout=record??{id:newId(),revision:0,day:gymDay};
+  const form=$('workout-form');
+  form.hidden=false;
+  $('workout-heading').textContent=(record?'Редактировать · ':'Новая тренировка · ')+dateLabel(workout.day);
+  form.elements.namedItem('title').value=record?.title??'';
+  form.elements.namedItem('duration').value=record?.duration??'';
+  $('workout-exercises').replaceChildren();
+  for(const exercise of record?.exercises??[{}]) addExercise(exercise);
+  form.elements.namedItem('title').focus();
+}
+function closeWorkout(){
+  workout=null;
+  $('workout-form').hidden=true;
+}
+function addExercise(exercise={}){
+  const container=$('workout-exercises');
+  if(container.children.length>=50) return;
+  const card=document.createElement('div');
+  card.className='exercise';
+  card.innerHTML='<label>Упражнение<input name="exercise" list="exercise-names" maxlength="120" placeholder="Жим лёжа" required></label><div class="sets"></div><div class="actions"><button type="button" data-add>＋ Подход</button><button type="button" data-remove>Убрать упражнение</button></div>';
+  const title=card.querySelector('input'), sets=card.querySelector('.sets');
+  title.value=exercise.title??'';
+  card.querySelector('[data-remove]').onclick=()=>card.remove();
+  function addSet(set={}){
+    if(sets.children.length>=50) return;
+    const row=document.createElement('div');
+    row.className='set-row';
+    row.innerHTML='<label>Вес, кг<input name="weight" type="number" inputmode="decimal" min="0" max="9999" step="any" required></label><label>Повторы<input name="reps" type="number" inputmode="numeric" min="1" max="9999" required></label><button type="button" aria-label="Убрать подход">×</button>';
+    row.querySelector('[name=weight]').value=set.weight??'';
+    row.querySelector('[name=reps]').value=set.reps??'';
+    row.querySelector('button').onclick=()=>row.remove();
+    sets.append(row);
+    return row.querySelector('input');
+  }
+  for(const set of exercise.sets??[{}]) addSet(set);
+  card.querySelector('[data-add]').onclick=()=>addSet()?.focus();
+  container.append(card);
+  return title;
+}
+async function save(method,record){
+  if(busy||!ready) return;
+  busy=true; updateControls(); message('Сохраняем…');
+  const submittedTab=tab;
+  try {
+    const response=await fetch('/api/records',{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});
+    if(response.status===409) {
+      await load();
+      editing=null;
+      if(workout?.id===record.id) closeWorkout();
+      if(!$('editor').hidden) renderForm();
+      message('Запись изменилась на другом устройстве. Загружена свежая версия.',true);
+      return;
+    }
+    if(!response.ok) throw new Error();
+    records=await response.json();
+    if(tab===submittedTab&&(method!=='DELETE'||editing?.id===record.id)) {editing=null; if(!$('editor').hidden) renderForm();}
+    if(record.kind==='workout'){
+      if(method==='PUT'||workout?.id===record.id) closeWorkout();
+      if(method==='PUT'){
+        gymDay=record.day;
+        gymMonth=new Date(gymDay+'T12:00:00');
+        const names=await fetch('/api/exercises',{cache:'no-store'}).catch(()=>null);
+        if(names?.ok) catalog=await names.json().catch(()=>catalog);
+      }
+    }
+    renderEntries(); message(method==='DELETE'?'Запись удалена':'Запись сохранена');
+  } catch {message('Изменение не сохранилось. Проверь соединение и попробуй ещё раз.',true);}
+  finally {busy=false; updateControls();}
+}
+$('form').onsubmit=event=>{
+  event.preventDefault();
+  const values=Object.fromEntries(new FormData(event.currentTarget));
+  if(!values.title.trim()){message('Введи название.',true);return;}
+  const {id,revision}=editing??{id:newId(),revision:0};
+  save('PUT',{...values,kind:tab,id,revision});
+};
+$('cancel').onclick=()=>{editing=null;renderForm();};
+$('new-workout').onclick=()=>openWorkout();
+$('cancel-workout').onclick=closeWorkout;
+$('add-exercise').onclick=()=>addExercise()?.focus();
+for(const [id,amount] of [['gym-prev',-1],['gym-next',1]]) $(id).onclick=()=>{
+  gymMonth=new Date(gymMonth.getFullYear(),gymMonth.getMonth()+amount,1);
+  gymDay=iso(gymMonth);
+  renderGym();
+};
+$('workout-form').onsubmit=event=>{
+  event.preventDefault();
+  const fields=event.currentTarget.elements;
+  const exercises=Array.from($('workout-exercises').children,card=>({
+    title:card.querySelector('[name=exercise]').value.trim(),
+    sets:Array.from(card.querySelectorAll('.set-row'),row=>({
+      weight:Number(row.querySelector('[name=weight]').value),
+      reps:Number(row.querySelector('[name=reps]').value)
+    }))
+  }));
+  const title=fields.namedItem('title').value.trim();
+  if(!title||!exercises.length||exercises.some(exercise=>!exercise.title||!exercise.sets.length)){
+    message('Укажи группы мышц и добавь хотя бы один подход к каждому упражнению.',true);
+    return;
+  }
+  const {id,revision,day}=workout;
+  save('PUT',{id,revision,day,kind:'workout',title,duration:Number(fields.namedItem('duration').value),exercises});
+};
+$('prev').onclick=()=>moveMonth(-1);
+$('next').onclick=()=>moveMonth(1);
+$('retry').onclick=load;
+document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>show(button.dataset.tab));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy&&!editing&&!workout)load();});
+show(tab); load();
+</script></body></html>
