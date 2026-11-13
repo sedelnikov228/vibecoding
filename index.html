@@ -1,8 +1,34 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#141714"><title>Личный трекер</title>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f6fb"><title>Личный трекер</title>
 <style>
-:root{color-scheme:dark;--bg:#141714;--panel:#1d221e;--line:#343d34;--text:#edf1e9;--muted:#a9b4a7;--accent:#d4f891}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 'Segoe UI',system-ui,sans-serif}header{border-bottom:1px solid var(--line)}.bar,main{max-width:1100px;margin:auto;padding:0 26px}.bar{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:700;display:flex;align-items:center;gap:11px}.mark{background:var(--accent);color:#172014;border-radius:9px;padding:3px 9px;font-weight:900}.muted,small{color:var(--muted)}nav{display:flex;gap:6px;flex-wrap:wrap}button,input,textarea{font:inherit}button{cursor:pointer;min-height:42px;border:1px solid var(--line);border-radius:10px;padding:8px 14px;background:#292f28;color:var(--text)}button:hover{border-color:var(--accent)}button:disabled{opacity:.55;cursor:wait}button[aria-current=true]{background:#34432b;color:var(--accent)}.primary{background:var(--accent);color:#172014;border-color:var(--accent);font-weight:750}main{padding-top:46px;padding-bottom:48px}h1{font-size:clamp(38px,7vw,70px);line-height:1;letter-spacing:-.055em;margin:8px 0 15px}h2{font-size:23px;margin:0 0 15px}p{margin:0 0 12px}.intro{margin-bottom:28px}.date{color:var(--accent);font-weight:650}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}label{display:grid;gap:6px;color:var(--muted);font-size:14px}.wide{grid-column:1/-1}input,textarea{min-width:0;width:100%;min-height:44px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:#151a15;color:var(--text);font-size:16px}textarea{min-height:115px;resize:vertical}.entry{padding:13px 0;border-top:1px solid var(--line);display:flex;align-items:start;justify-content:space-between;gap:10px}.entry p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.entry>div:first-child{min-width:0}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{font-size:13px;padding:5px 9px}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center;margin:14px 0}.calendar button{padding:2px;min-width:0}.calendar .filled{color:var(--accent)}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px}.status{font-size:13px;color:var(--muted);margin:18px 0;min-height:1.4em}.error{color:#ffb4a9}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}[hidden]{display:none!important}@media(max-width:700px){.bar{padding:12px 16px;align-items:flex-start;flex-direction:column;gap:9px}.bar button{min-height:36px;padding:5px 9px;font-size:14px}main{padding:28px 16px}.grid{grid-template-columns:1fr}.card{padding:16px}.entry{flex-wrap:wrap}}
+:root{color-scheme:dark;--bg:#141714;--panel:#1d221e;--line:#343d34;--text:#edf1e9;--muted:#a9b4a7;--accent:#d4f891}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 'Segoe UI',system-ui,sans-serif}header{border-bottom:1px solid var(--line)}.bar,main{max-width:1100px;margin:auto;padding:0 26px}.bar{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:700;display:flex;align-items:center;gap:11px}.mark{background:var(--accent);color:#172014;border-radius:9px;padding:3px 9px;font-weight:900}.muted,small{color:var(--muted)}nav{display:flex;gap:6px;flex-wrap:wrap}button,input,textarea{font:inherit}button{cursor:pointer;min-height:42px;border:1px solid var(--line);border-radius:10px;padding:8px 14px;background:#292f28;color:var(--text)}button:hover{border-color:var(--accent)}button:disabled{opacity:.55;cursor:wait}button[aria-current=true]{background:#34432b;color:var(--accent)}.primary{background:var(--accent);color:#172014;border-color:var(--accent);font-weight:750}main{padding-top:46px;padding-bottom:48px}h1{font-size:clamp(38px,7vw,70px);line-height:1;letter-spacing:-.055em;margin:8px 0 15px}h2{font-size:23px;margin:0 0 15px}p{margin:0 0 12px}.intro{margin-bottom:28px}.date{color:var(--accent);font-weight:650}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}label{display:grid;gap:6px;color:var(--muted);font-size:14px}.wide{grid-column:1/-1}input,textarea{min-width:0;width:100%;min-height:44px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:#151a15;color:var(--text);font-size:16px}textarea{min-height:115px;resize:vertical}.entry{padding:13px 0;border-top:1px solid var(--line);display:flex;align-items:start;justify-content:space-between;gap:10px}.entry p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.entry>div:first-child{min-width:0}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{font-size:13px;padding:5px 9px}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center;margin:14px 0}.calendar button{padding:2px;min-width:0}.calendar .filled{color:var(--accent)}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px}.status{font-size:13px;color:var(--muted);margin:18px 0;min-height:1.4em}.error{color:#a12632}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}[hidden]{display:none!important}@media(max-width:700px){.bar{padding:12px 16px;align-items:flex-start;flex-direction:column;gap:9px}.bar button{min-height:36px;padding:5px 9px;font-size:14px}main{padding:28px 16px}.grid{grid-template-columns:1fr}.card{padding:16px}.entry{flex-wrap:wrap}}
 .gym-grid{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}.gym-stack{display:grid;gap:16px;min-width:0}.exercise{border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0}.set-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end;margin:8px 0}.calendar .filled{box-shadow:inset 0 -3px var(--accent)}#gym-catalog{padding-left:20px;overflow-wrap:anywhere}summary{cursor:pointer}.workout-details{overflow-wrap:anywhere;margin:8px 0;padding-left:20px}@media(max-width:700px){.gym-grid{grid-template-columns:1fr}}
+
+/* Planner shell */
+:root{color-scheme:light;--bg:#f5f6fb;--panel:#fff;--line:#e1e5ef;--text:#171d2e;--muted:#555f76;--accent:#354fc4;--selected:#e9edff}
+body{font-family:Inter,'Segoe UI',system-ui,sans-serif}
+body>header{position:fixed;inset:0 auto 0 0;width:208px;background:#edf0f8;border:0;border-right:1px solid var(--line)}
+.bar{padding:28px 16px;align-items:stretch;flex-direction:column;gap:32px}
+.brand{font-size:15px;white-space:nowrap}.mark{color:white;background:var(--accent)}
+nav{display:grid;gap:4px}nav button{text-align:left;background:transparent;border-color:transparent}
+main{margin:0 0 0 208px;max-width:1300px;padding:38px clamp(16px,3vw,42px)}
+.intro{margin-bottom:24px}h1{font-size:clamp(32px,4vw,48px);letter-spacing:-.045em;margin:5px 0 8px}.date{font-size:13px;color:var(--muted);text-transform:capitalize}
+button{background:var(--panel);border-radius:8px}button[aria-current=true]{background:var(--selected);color:var(--accent)}
+.primary{color:white;background:var(--accent);border-color:var(--accent)}input,textarea{background:var(--panel)}
+.gym-grid{background:var(--panel);border:1px solid var(--line);border-radius:16px;gap:0;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+.gym-grid .card{border:0;border-radius:0;background:transparent;padding:22px}
+.gym-grid .gym-stack{gap:0}.gym-grid .gym-stack+ .gym-stack{border-left:1px solid var(--line)}
+.gym-grid details.card{border-top:1px solid var(--line)}
+.month-panel h2,.day-panel h2{margin:0;font-size:20px}.month-panel h2{text-transform:capitalize}
+.month-controls{display:flex;gap:4px}.month-controls button{min-width:42px;padding:0;font-size:22px}
+#gym-calendar button{position:relative;border-color:transparent;box-shadow:none;font-variant-numeric:tabular-nums}
+#gym-calendar button.filled::after{content:'';position:absolute;bottom:4px;left:calc(50% - 2px);width:4px;height:4px;border-radius:50%;background:var(--accent)}
+#gym-calendar button:hover{border-color:var(--accent)}
+#gym-entries{margin:15px 0 18px}.day-panel .entry{display:block}.day-panel .actions{margin-top:9px}
+.workout-details{list-style:none;margin:10px 0 0;padding:0}.workout-details li{padding:8px 0;border-top:1px solid var(--line)}.workout-details span{display:block;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.exercise{border:0;border-top:1px solid var(--line);border-radius:0;padding:12px 0}
+@media(max-width:880px){body>header{position:static;width:auto;border-right:0;border-bottom:1px solid var(--line)}.bar{padding:12px 16px;gap:10px;align-items:flex-start}nav{display:flex}nav button{padding:5px 10px}main{margin:0 auto;padding:24px 16px}}
+@media(max-width:640px){.gym-grid{grid-template-columns:minmax(0,1fr)}.gym-grid .card{padding:15px}.gym-grid .gym-stack+ .gym-stack{border-left:0;border-top:1px solid var(--line)}.gym-grid .fields{grid-template-columns:1fr}.month-panel h2,.day-panel h2{font-size:18px}}
 </style></head><body>
 <header><div class="bar"><div class="brand"><span class="mark" aria-hidden="true">↗</span> Личный трекер</div><nav aria-label="Разделы"><button data-tab="gym">Зал</button><button data-tab="notes">Заметки</button><button data-tab="calendar">Календарь</button><button data-tab="timeline">Таймлайн</button></nav></div></header>
 <main><div class="intro"><div class="date" id="today"></div><h1 id="heading">Тренировки</h1><p class="muted" id="description"></p></div>
@@ -10,11 +36,11 @@
 <section id="browse" class="card" hidden><div id="month-bar" class="toolbar"><button id="prev" aria-label="Предыдущий месяц">←</button><strong id="month"></strong><button id="next" aria-label="Следующий месяц">→</button></div><div id="calendar" class="calendar"></div><h2 id="browse-title"></h2><div id="browse-entries"></div></section>
 <section id="gym-panel" class="grid gym-grid" hidden>
   <div class="gym-stack">
-    <div class="card"><div class="toolbar"><button id="gym-prev" aria-label="Предыдущий месяц">‹</button><strong id="gym-month"></strong><button id="gym-next" aria-label="Следующий месяц">›</button></div><div id="gym-calendar" class="calendar"></div><small>Подчёркнуты дни с тренировками</small></div>
+    <div class="card month-panel"><div class="toolbar"><h2 id="gym-month"></h2><div class="month-controls"><button id="gym-prev" aria-label="Предыдущий месяц">‹</button><button id="gym-next" aria-label="Следующий месяц">›</button></div></div><div id="gym-calendar" class="calendar"></div><small>• День с тренировкой</small></div>
     <details class="card"><summary>Каталог упражнений <span id="gym-count"></span></summary><ul id="gym-catalog"></ul></details>
   </div>
   <div class="gym-stack">
-    <div class="card"><h2 id="gym-day"></h2><button type="button" class="primary" id="new-workout" data-record-action>Добавить тренировку</button><div id="gym-entries"></div></div>
+    <div class="card day-panel" id="gym-day-panel"><h2 id="gym-day"></h2><div id="gym-entries"></div><button type="button" class="primary" id="new-workout" data-record-action>＋ Тренировка</button></div>
     <form class="card" id="workout-form" hidden>
       <h2 id="workout-heading"></h2>
       <div class="fields"><label>Группы мышц<input name="title" placeholder="Грудь, трицепс" maxlength="120" required></label><label>Длительность, мин<input name="duration" type="number" inputmode="numeric" min="1" max="1440" required></label></div>
@@ -113,7 +139,10 @@ function list(container,items){
       exercises.className='workout-details';
       for(const exercise of record.exercises){
         const entry=document.createElement('li');
-        entry.textContent=exercise.title+' · '+exercise.sets.map(set=>set.weight+' кг × '+set.reps).join(', ');
+        entry.textContent=exercise.title;
+        const sets=document.createElement('span');
+        sets.textContent=exercise.sets.map(set=>set.weight+' кг × '+set.reps).join(' · ');
+        entry.append(sets);
         exercises.append(entry);
       }
       copy.append(exercises);
@@ -145,13 +174,19 @@ function drawCalendar(gym=false){
     const date=iso(new Date(year,index,day)), button=document.createElement('button');
     button.textContent=day; button.setAttribute('aria-label',dateLabel(date)+(dates.has(date)?', есть записи':''));
     button.setAttribute('aria-current',String(date===(gym?gymDay:selected))); button.classList.toggle('filled',dates.has(date));
-    button.onclick=()=>{if(gym) gymDay=date; else selected=date; renderEntries(); calendar.querySelector('[aria-current=true]').focus();};
+    button.onclick=()=>{if(gym) selectGymDay(date); else selected=date; renderEntries(); calendar.querySelector('[aria-current=true]').focus();};
     calendar.append(button);
   }
 }
 function moveMonth(amount){
   month=new Date(month.getFullYear(),month.getMonth()+amount,1);
   selected=iso(month); renderEntries();
+}
+function selectGymDay(day){
+  gymDay=day;
+  const showDraft=workout?.day===day;
+  $('workout-form').hidden=!showDraft;
+  $('gym-day-panel').hidden=showDraft;
 }
 function renderGym(){
   drawCalendar(true);
@@ -167,14 +202,17 @@ function renderGym(){
   $('exercise-names').replaceChildren(...names.map(name=>new Option(name)));
 }
 function openWorkout(record){
+  if(workout&&workout.id!==record?.id&& !confirm('Закрыть несохранённую тренировку?')) return;
   if(record){
     gymDay=record.day;
     gymMonth=new Date(gymDay+'T12:00:00');
     show('gym');
   }
+  if(record&&workout?.id===record.id){selectGymDay(record.day);return;}
   workout=record??{id:newId(),revision:0,day:gymDay};
   const form=$('workout-form');
   form.hidden=false;
+  $('gym-day-panel').hidden=true;
   $('workout-heading').textContent=(record?'Редактировать · ':'Новая тренировка · ')+dateLabel(workout.day);
   form.elements.namedItem('title').value=record?.title??'';
   form.elements.namedItem('duration').value=record?.duration??'';
@@ -185,6 +223,7 @@ function openWorkout(record){
 function closeWorkout(){
   workout=null;
   $('workout-form').hidden=true;
+  $('gym-day-panel').hidden=false;
 }
 function addExercise(exercise={}){
   const container=$('workout-exercises');
@@ -250,11 +289,11 @@ $('form').onsubmit=event=>{
 };
 $('cancel').onclick=()=>{editing=null;renderForm();};
 $('new-workout').onclick=()=>openWorkout();
-$('cancel-workout').onclick=closeWorkout;
+$('cancel-workout').onclick=()=>{closeWorkout(); $('new-workout').focus();};
 $('add-exercise').onclick=()=>addExercise()?.focus();
 for(const [id,amount] of [['gym-prev',-1],['gym-next',1]]) $(id).onclick=()=>{
   gymMonth=new Date(gymMonth.getFullYear(),gymMonth.getMonth()+amount,1);
-  gymDay=iso(gymMonth);
+  selectGymDay(iso(gymMonth));
   renderGym();
 };
 $('workout-form').onsubmit=event=>{
