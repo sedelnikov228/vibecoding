@@ -39,6 +39,7 @@ button{background:var(--panel);border-radius:8px}button[aria-current=true]{backg
   <div class="gym-stack">
     <div class="card month-panel"><div class="toolbar"><h2 id="gym-month"></h2><div class="month-controls"><button id="gym-prev" aria-label="Предыдущий месяц">‹</button><button id="gym-next" aria-label="Следующий месяц">›</button></div></div><div id="gym-calendar" class="calendar"></div><small>• День с тренировкой</small></div>
     <details class="card"><summary>Каталог упражнений <span id="gym-count"></span></summary><ul id="gym-catalog"></ul></details>
+    <div class="card"><button type="button" id="export-month" data-record-action>Скачать месяц в Excel</button></div>
   </div>
   <div class="gym-stack">
     <div class="card day-panel" id="gym-day-panel"><h2 id="gym-day"></h2><div id="gym-entries"></div><button type="button" class="primary" id="new-workout" data-record-action>＋ Тренировка</button></div>
@@ -189,6 +190,123 @@ function selectGymDay(day){
   $('workout-form').hidden=!showDraft;
   $('gym-day-panel').hidden=showDraft;
 }
+function escapeXml(value){
+  return String(value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g,'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function zipFiles(files){
+  // ZIP storage method 0 keeps workbook generation dependency-free and offline.
+  const encoder=new TextEncoder(), parts=[], directory=[];
+  let offset=0, directorySize=0;
+  for(const [path,content] of Object.entries(files)){
+    const name=encoder.encode(path), data=encoder.encode(content);
+    let crc=-1;
+    for(const byte of data){
+      crc^=byte;
+      for(let bit=0;bit<8;bit++) crc=(crc>>>1)^((crc&1)?0xedb88320:0);
+    }
+    const local=new Uint8Array(30+name.length), central=new Uint8Array(46+name.length);
+    const l=new DataView(local.buffer), c=new DataView(central.buffer);
+    l.setUint32(0,0x04034b50,true);
+    l.setUint16(4,20,true);
+    l.setUint16(12,33,true);
+    l.setUint32(14,~crc,true);
+    l.setUint32(18,data.length,true);
+    l.setUint32(22,data.length,true);
+    l.setUint16(26,name.length,true);
+    local.set(name,30);
+    c.setUint32(0,0x02014b50,true);
+    c.setUint16(4,20,true);
+    central.set(local.subarray(4,30),6);
+    c.setUint32(42,offset,true);
+    central.set(name,46);
+    parts.push(local,data);
+    directory.push(central);
+    offset+=local.length+data.length;
+    directorySize+=central.length;
+  }
+  const footer=new Uint8Array(22), end=new DataView(footer.buffer);
+  end.setUint32(0,0x06054b50,true);
+  end.setUint16(8,directory.length,true);
+  end.setUint16(10,directory.length,true);
+  end.setUint32(12,directorySize,true);
+  end.setUint32(16,offset,true);
+  return new Blob([...parts,...directory,footer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function createWorkbook(sheets){
+  const main='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+  const rel='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const packageRel='http://schemas.openxmlformats.org/package/2006/relationships';
+  const types='application/vnd.openxmlformats-officedocument.spreadsheetml';
+  const files={
+    '[Content_Types].xml':`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/xl/workbook.xml" ContentType="${types}.sheet.main+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="${types}.worksheet+xml"/>`).join('')}</Types>`,
+    '_rels/.rels':`<Relationships xmlns="${packageRel}"><Relationship Id="rId1" Type="${rel}/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    'xl/workbook.xml':`<workbook xmlns="${main}" xmlns:r="${rel}"><sheets>${sheets.map(({name},i)=>`<sheet name="${name}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`,
+    'xl/_rels/workbook.xml.rels':`<Relationships xmlns="${packageRel}">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${rel}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}</Relationships>`
+  };
+  for(const [i,{rows,widths}] of sheets.entries()){
+    const columns=widths.map((width,j)=>`<col min="${j+1}" max="${j+1}" width="${width}" customWidth="1"/>`).join('');
+    const cells=rows.map((row,j)=>`<row r="${j+1}">${row.map((value,k)=>{
+      if(value===null) return '';
+      const cell=String.fromCharCode(65+k)+(j+1);
+      return typeof value==='number'
+        ? `<c r="${cell}"><v>${value}</v></c>`
+        : `<c r="${cell}" t="inlineStr"><is><t xml:space="preserve">${escapeXml(value)}</t></is></c>`;
+    }).join('')}</row>`).join('');
+    files[`xl/worksheets/sheet${i+1}.xml`]=`<worksheet xmlns="${main}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${columns}</cols><sheetData>${cells}</sheetData><autoFilter ref="A1:${String.fromCharCode(64+widths.length)}${rows.length}"/></worksheet>`;
+  }
+  return zipFiles(files);
+}
+function workoutSheets(items,period){
+  const workouts=[['Дата','Группы мышц','Длительность, мин','Упражнений','Подходов','ID тренировки']];
+  const sets=[['Дата','ID тренировки','Упражнение','Подход','Вес, кг','Повторы']];
+  let minutes=0, sessions=0, legacy=0;
+  for(const record of items){
+    if(!record.day.startsWith(period+'-')) continue;
+    if(record.kind==='gym'){
+      sets.push([record.day,null,record.title,1,record.weight,record.reps]);
+      legacy++;
+      continue;
+    }
+    if(record.kind!=='workout') continue;
+    minutes+=record.duration;
+    sessions++;
+    let count=0;
+    for(const exercise of record.exercises){
+      for(const [i,set] of exercise.sets.entries()){
+        sets.push([record.day,record.id,exercise.title,i+1,set.weight,set.reps]);
+        count++;
+      }
+    }
+    workouts.push([record.day,record.title,record.duration,record.exercises.length,count,record.id]);
+  }
+  return [
+    {name:'Итоги',widths:[34,18],rows:[['Показатель','Значение'],['Месяц',period],['Тренировок',sessions],['Длительность, мин',minutes],['Всего подходов',sets.length-1],['Отдельных подходов из старых записей',legacy]]},
+    {name:'Тренировки',widths:[14,32,22,16,15,40],rows:workouts},
+    {name:'Подходы',widths:[14,40,52,13,13,13],rows:sets}
+  ];
+}
+async function exportMonth(){
+  const period=iso(gymMonth).slice(0,7), button=$('export-month');
+  button.disabled=true;
+  try{
+    const response=await fetch('/api/records',{cache:'no-store'});
+    if(!response.ok) throw new Error();
+    const workbook=createWorkbook(workoutSheets(await response.json(),period));
+    const url=URL.createObjectURL(workbook), link=document.createElement('a');
+    link.href=url;
+    link.download='workouts-'+period+'.xlsx';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    message('Экспорт за '+period+' готов.');
+  }catch{
+    message('Не удалось скачать Excel. Попробуй ещё раз.',true);
+  }finally{
+    button.disabled=busy||!ready;
+  }
+}
 function renderGym(){
   drawCalendar(true);
   $('gym-day').textContent=dateLabel(gymDay);
@@ -296,6 +414,7 @@ $('form').onsubmit=event=>{
 };
 $('cancel').onclick=()=>{editing=null;renderForm();};
 $('new-workout').onclick=()=>openWorkout();
+$('export-month').onclick=exportMonth;
 $('cancel-workout').onclick=()=>{closeWorkout(); $('new-workout').focus();};
 $('add-exercise').onclick=()=>addExercise()?.focus();
 for(const [id,amount] of [['gym-prev',-1],['gym-next',1]]) $(id).onclick=()=>{
