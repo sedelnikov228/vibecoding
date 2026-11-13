@@ -3,12 +3,12 @@ import { readFile } from 'node:fs/promises';
 import { networkInterfaces } from 'node:os';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import './build.mjs';
-const {default: worker} = await import('./dist/server/index.js');
+import worker from './worker.mjs';
 
 const args = process.argv.slice(2);
 const lan = args.includes('--lan');
-const port = Number(args.find(value => /^\d+$/.test(value)) ?? 8787);
+const port = Number(args.find(value => /^\d+$/.test(value)) ?? 8788);
+const page = new URL('./index.html', import.meta.url);
 const database = new DatabaseSync(fileURLToPath(new URL('./tracker.sqlite', import.meta.url)));
 database.exec('PRAGMA journal_mode=WAL');
 if (!database.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='records'").get()) {
@@ -50,6 +50,14 @@ const server = createServer(async (incoming, outgoing) => {
       return;
     }
     const method = incoming.method;
+    if (url.pathname === '/' && (method === 'GET' || method === 'HEAD')) {
+      const html = await readFile(page);
+      outgoing.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store'
+      }).end(method === 'HEAD' ? undefined : html);
+      return;
+    }
     let body;
     if (method === 'PUT' || method === 'DELETE') {
       const chunks = [];
